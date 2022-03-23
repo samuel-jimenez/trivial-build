@@ -28,9 +28,11 @@
 
 (defun boot-and-build (system-name entry-point binary-pathname
                        impl-path impl-flags load-flag eval-flag)
-  (let ((command (format nil "~S ~{~A ~} ~A ~S ~A"
-                         (namestring impl-path)
+  (let ((command (concatenate 'list
+                     (list
+                         (namestring impl-path))
                          impl-flags
+                         (list
                          #+quicklisp
                          load-flag
                          #-quicklisp
@@ -42,12 +44,15 @@
                          ""
                          (code-list-to-eval
                           eval-flag
-                          (load-and-build-code system-name entry-point binary-pathname)))))
+                          (load-and-build-code system-name entry-point binary-pathname))))))
     (format t "~&Launch: ~A~%" command)
     (terpri)
     (uiop:run-program command
-                      :output *standard-output*
-                      :error :output)))
+                  :output *standard-output*
+                  :error :output
+                  :error-output :lines)))
+
+
 
 (defun build (system-name entry-point binary-pathname)
   "Build the system."
