@@ -85,7 +85,8 @@ jobs:
           name: install scoop
           command:  |
             $ProgressPreference = "SilentlyContinue" # to solve iwr : Win32 internal error "Access is denied" 0x5 occurred while reading the console output buffer.
-            iwr -useb get.scoop.sh | iex
+            iwr -useb get.scoop.sh -outfile 'install.ps1'
+            .\install.ps1 -RunAsAdmin
       - run:
           name: install roswell
           command:  |
