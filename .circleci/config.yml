@@ -52,8 +52,8 @@ jobs:
 
             (defun main (&rest argv)
               (declare (ignore argv))
-              (setf fiveam:*debug-on-error* t
-                    fiveam:*debug-on-failure* t)
+              (setf fiveam:*on-error* :debug
+                    fiveam:*on-failure* :debug)
               (setf *debugger-hook*
                     (lambda (c h)
                       (declare (ignore h))
@@ -104,8 +104,8 @@ jobs:
 
           (defun main (&rest argv)
             (declare (ignore argv))
-            (setf fiveam:*debug-on-error* t
-                    fiveam:*debug-on-failure* t)
+            (setf fiveam:*on-error* :debug
+                    fiveam:*on-failure* :debug)
               (setf *debugger-hook*
                     (lambda (c h)
                       (declare (ignore h))
