@@ -1,7 +1,7 @@
 # trivial-build
 
-[![Build Status](https://travis-ci.org/ceramic/trivial-build.svg?branch=master)](https://travis-ci.org/ceramic/trivial-build)
-[![Coverage Status](https://coveralls.io/repos/ceramic/trivial-build/badge.svg?branch=master&service=github)](https://coveralls.io/github/ceramic/trivial-build?branch=master)
+[![Build Status](https://travis-ci.com/samuel-jimenez/trivial-build.svg?branch=master)](https://travis-ci.com/samuel-jimenez/trivial-build)
+[![Coverage Status](https://coveralls.io/repos/samuel-jimenez/trivial-build/badge.svg?branch=master&service=github)](https://coveralls.io/github/samuel-jimenez/trivial-build?branch=master)
 
 Compile a system into an executable.
 

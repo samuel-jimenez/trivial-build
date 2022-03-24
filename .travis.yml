@@ -39,7 +39,3 @@ script:
 				-e '(ql:quickload :trivial-build-test)'
 				-e '(coveralls:with-coveralls (:exclude (list "t"))
 							(trivial-build-test:run-tests))'
-
-notifications:
-	email:
-		- eudoxiahp@gmail.com
