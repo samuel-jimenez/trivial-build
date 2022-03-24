@@ -27,7 +27,10 @@
 							(uiop:run-program (namestring path) :output :string))
 						"1"))
 		(when (probe-file path)
+			#+win32 (sleep 5)
 			(delete-file path))))
 
 (defun run-tests ()
 	(run! 'tests))
+
+
