@@ -36,7 +36,6 @@ jobs:
       - run:
           name: install testing framework
           command: |
-            ros install fiveam
             ros install cl-coveralls
             ros install trivial-build-test
 #Project Settings>Environment Variables>COVERALLS_REPO_TOKEN
@@ -91,7 +90,6 @@ jobs:
             scoop install roswell
       - run:
           name: install testing framework
-          command: ros install fiveam
           command: ros install trivial-build-test
       - run: |
           ros init test
