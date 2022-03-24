@@ -5,7 +5,7 @@ version: 2.1
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  say-hello:
+  build-docker:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
@@ -15,12 +15,69 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: install roswell
+          command: curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
+      - run:
+          name: set path
+          command: echo "export PATH=$LISP_IMPLS_BIN:$PATH" >> $BASH_ENV
+
+      - run:
+          name: build-ros
+          command: ros run -- --version
+
+      - run:
+          name: build-clisp
+          command: ros install ccl-bin
+
+      - run:
+          name: Clone trivial-exe
+          command: git clone https://github.com/ceramic/trivial-exe ~/lisp/trivial-exe
+
+      - run:
+          name: install testing framework
+          command: |
+            ros install fiveam
+            ros install cl-coveralls
+            ros install trivial-build-test
+#Project Settings>Environment Variables>COVERALLS_REPO_TOKEN
+      - run:
+          name: init test
+          command: |
+            ros init test
+            cat >> test.ros \<< EOF
+            (require :cl-coveralls)
+            (require :fiveam)
+            (require :trivial-build-test)
+
+            (defun main (&rest argv)
+              (declare (ignore argv))
+              (setf fiveam:*debug-on-error* t
+                    fiveam:*debug-on-failure* t)
+              (setf *debugger-hook*
+                    (lambda (c h)
+                      (declare (ignore h))
+                      (uiop:print-condition-backtrace c)
+                      (uiop:quit -1)))
+              (coveralls:with-coveralls (:exclude (list "t"))
+                (or (trivial-build-test:run-tests)
+                  (uiop:quit -1))))
+            EOF
+
+      - run:
+          name: run-sbcl
+          command: |
+            ros config set default.lisp sbcl-bin
+            COVERALLS=true ./test.ros
+
+      - run:
+          name: run-clisp
+          command: |
+            ros config set default.lisp ccl-bin
+            ./test.ros
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  build-and-test:
     jobs:
-      - say-hello
+      - build-docker
