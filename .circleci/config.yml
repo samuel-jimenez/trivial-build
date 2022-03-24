@@ -1,0 +1,135 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  build-linux:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: cimg/base:stable
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: install roswell
+          command: curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
+      - run:
+          name: set path
+          command: echo "export PATH=$LISP_IMPLS_BIN:$PATH" >> $BASH_ENV
+
+      - run:
+          name: build-ros
+          command: ros run -- --version
+
+      - run:
+          name: build-clisp
+          command: ros install ccl-bin
+
+      - run:
+          name: Clone trivial-exe
+          command: git clone https://github.com/ceramic/trivial-exe ~/lisp/trivial-exe
+
+      - run:
+          name: init roswell test file
+          command: |
+            ros init test
+            cat >> test.ros \<< EOF
+            (require :cl-coveralls)
+            (require :trivial-build-test)
+
+            (defun main (&rest argv)
+              (declare (ignore argv))
+              (setf fiveam:*on-error* :debug
+                    fiveam:*on-failure* :debug)
+              (setf *debugger-hook*
+                    (lambda (c h)
+                      (declare (ignore h))
+                      (uiop:print-condition-backtrace c)
+                      (uiop:quit -1)))
+              (coveralls:with-coveralls (:exclude (list "t"))
+                (or (trivial-build-test:run-tests)
+                  (uiop:quit -1))))
+            EOF
+
+      - run:
+          name: install testing framework
+          command: |
+            ros install cl-coveralls
+            ros install trivial-build-test
+#Project Settings>Environment Variables>COVERALLS_REPO_TOKEN
+
+      - run:
+          name: run-sbcl
+          command: |
+            ros config set default.lisp sbcl-bin
+            COVERALLS=true ./test.ros
+
+      - run:
+          name: run-clisp
+          command: |
+            ros config set default.lisp ccl-bin
+            ./test.ros
+
+  build-win:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run:
+          name: install scoop
+          command:  |
+            $ProgressPreference = "SilentlyContinue" # to solve iwr : Win32 internal error "Access is denied" 0x5 occurred while reading the console output buffer.
+
+            # to solve: Running the installer as administrator is disabled by default, see https://github.com/ScoopInstaller/Install#for-admin for details.
+            iwr -useb get.scoop.sh -outfile 'install.ps1'
+            .\install.ps1 -RunAsAdmin
+      - run:
+          name: install roswell
+          command:  |
+            $ProgressPreference = "SilentlyContinue"
+            scoop install roswell
+
+      - run:
+          name: init roswell test file
+          command: |
+            ros init test
+            $String1 = @"
+            (push "C:/Users/circleci/project"
+                ql:*local-project-directories*)
+            (require :trivial-build-test)
+
+            (defun main (&rest argv)
+              (declare (ignore argv))
+              (setf fiveam:*on-error* :debug
+                      fiveam:*on-failure* :debug)
+                (setf *debugger-hook*
+                      (lambda (c h)
+                        (declare (ignore h))
+                        (uiop:print-condition-backtrace c)
+                        (uiop:quit -1)))
+              (trivial-build-test:run-tests))
+            "@
+            Add-Content "test.ros" $String1
+      - run:
+          name: install testing framework
+          command: |
+            ros install fiveam
+            ros install trivial-build-test
+      - run:
+          name: run-sbcl
+          command: ros -- test.ros
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  build-and-test:
+    jobs:
+      - build-linux
+      - build-win
