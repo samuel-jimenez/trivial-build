@@ -37,12 +37,6 @@ jobs:
           command: git clone https://github.com/ceramic/trivial-exe ~/lisp/trivial-exe
 
       - run:
-          name: install testing framework
-          command: |
-            ros install cl-coveralls
-            ros install trivial-build-test
-#Project Settings>Environment Variables>COVERALLS_REPO_TOKEN
-      - run:
           name: init test
           command: |
             ros init test
@@ -63,6 +57,13 @@ jobs:
                 (or (trivial-build-test:run-tests)
                   (uiop:quit -1))))
             EOF
+
+      - run:
+          name: install testing framework
+          command: |
+            ros install cl-coveralls
+            ros install trivial-build-test
+#Project Settings>Environment Variables>COVERALLS_REPO_TOKEN
 
       - run:
           name: run-sbcl
@@ -86,7 +87,7 @@ jobs:
           command:  |
             $ProgressPreference = "SilentlyContinue" # to solve iwr : Win32 internal error "Access is denied" 0x5 occurred while reading the console output buffer.
 
-            #to solve: Running the installer as administrator is disabled by default, see https://github.com/ScoopInstaller/Install#for-admin for details.
+            # to solve: Running the installer as administrator is disabled by default, see https://github.com/ScoopInstaller/Install#for-admin for details.
             iwr -useb get.scoop.sh -outfile 'install.ps1'
             .\install.ps1 -RunAsAdmin
       - run:
@@ -94,9 +95,6 @@ jobs:
           command:  |
             $ProgressPreference = "SilentlyContinue"
             scoop install roswell
-      - run:
-          name: install testing framework
-          command: ros install fiveam
       - run: |
           ros init test
           $String1 = @"
@@ -116,6 +114,11 @@ jobs:
             (trivial-build-test:run-tests))
           "@
           Add-Content "test.ros" $String1
+      - run:
+          name: install testing framework
+          command: |
+            ros install fiveam
+            ros install trivial-build-test
       - run:
           name: run-sbcl
           command: ros -- test.ros
