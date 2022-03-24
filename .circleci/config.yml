@@ -5,7 +5,7 @@ version: 2.1
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build-docker:
+  build-linux:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
@@ -46,7 +46,6 @@ jobs:
             ros init test
             cat >> test.ros \<< EOF
             (require :cl-coveralls)
-            (require :fiveam)
             (require :trivial-build-test)
 
             (defun main (&rest argv)
@@ -75,9 +74,54 @@ jobs:
             ros config set default.lisp ccl-bin
             ./test.ros
 
+  build-win:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run:
+          name: install scoop
+          command:  |
+            $ProgressPreference = "SilentlyContinue" # to solve iwr : Win32 internal error "Access is denied" 0x5 occurred while reading the console output buffer.
+            iwr -useb get.scoop.sh | iex
+      - run:
+          name: install roswell
+          command:  |
+            $ProgressPreference = "SilentlyContinue"
+            scoop install roswell
+      - run:
+          name: install testing framework
+          command: ros install fiveam
+          command: ros install trivial-build-test
+      - run: |
+          ros init test
+          $String1 = @"
+          (require :trivial-build-test)
+
+          (defun main (&rest argv)
+            (declare (ignore argv))
+            (setf fiveam:*debug-on-error* t
+                    fiveam:*debug-on-failure* t)
+              (setf *debugger-hook*
+                    (lambda (c h)
+                      (declare (ignore h))
+                      (uiop:print-condition-backtrace c)
+                      (uiop:quit -1)))
+            (push "C:/Users/circleci/project"
+              ql:*local-project-directories*)
+            (trivial-build-test:run-tests))
+          "@
+          Add-Content "test.ros" $String1
+      - run:
+          name: run-sbcl
+          command: ros -- test.ros
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   build-and-test:
     jobs:
-      - build-docker
+      - build-linux
+      - build-win:
+          requires:
+           - build-linux
