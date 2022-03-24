@@ -96,10 +96,12 @@ jobs:
             scoop install roswell
       - run:
           name: install testing framework
-          command: ros install trivial-build-test
+          command: ros install fiveam
       - run: |
           ros init test
           $String1 = @"
+          (push "C:/Users/circleci/project"
+              ql:*local-project-directories*)
           (require :trivial-build-test)
 
           (defun main (&rest argv)
@@ -111,8 +113,6 @@ jobs:
                       (declare (ignore h))
                       (uiop:print-condition-backtrace c)
                       (uiop:quit -1)))
-            (push "C:/Users/circleci/project"
-              ql:*local-project-directories*)
             (trivial-build-test:run-tests))
           "@
           Add-Content "test.ros" $String1
