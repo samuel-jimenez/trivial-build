@@ -125,7 +125,5 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - build-linux
-      - build-win:
-          requires:
-           - build-linux
+#      - build-linux
+      - build-win
