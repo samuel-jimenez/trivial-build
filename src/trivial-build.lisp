@@ -4,6 +4,13 @@
 	(:export :build))
 (in-package :trivial-build)
 
+(lisp-invocation:define-lisp-implementation :roswell ()
+	:fullname "Roswell"
+	:name "ros"
+	:flags ()
+	:eval-flag "--e"
+	:load-flag "--l")
+
 (defun roswellp ()
 	"Are we in a Roswell implementation?"
 	(find ".roswell"
@@ -55,23 +62,20 @@
 	(declare (type keyword system-name)
 				(type string entry-point)
 				(type pathname binary-pathname))
-	(let ((implementation (lisp-invocation:get-lisp-implementation)))
-	(if (roswellp)
-			(boot-and-build system-name
-								entry-point
-								binary-pathname
-								"ros"
-								'()
-								"-l"
-								"-e")
-			(boot-and-build system-name
-								entry-point
-								binary-pathname
-								(trivial-exe:executable-pathname)
-								(lisp-invocation:lisp-implementation-flags
-								implementation)
-								(lisp-invocation:lisp-implementation-load-flag
-								implementation)
-								(lisp-invocation:lisp-implementation-eval-flag
-								implementation))))
+	(let (
+		(implementation (if (roswellp) (lisp-invocation:get-lisp-implementation :roswell) (lisp-invocation:get-lisp-implementation)))
+		(executable-pathname (if (roswellp)
+										(lisp-invocation:lisp-implementation-name
+											implementation)
+										(trivial-exe:executable-pathname))))
+	(boot-and-build system-name
+						entry-point
+						binary-pathname
+						executable-pathname
+						(lisp-invocation:lisp-implementation-flags
+							implementation)
+						(lisp-invocation:lisp-implementation-load-flag
+							implementation)
+						(lisp-invocation:lisp-implementation-eval-flag
+							implementation)))
 	binary-pathname)
