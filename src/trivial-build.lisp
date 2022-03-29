@@ -62,7 +62,7 @@
 	(declare (type keyword system-name)
 				(type string entry-point)
 				(type pathname binary-pathname))
-	(let (
+	(let* (
 		(implementation (if (roswellp) (lisp-invocation:get-lisp-implementation :roswell) (lisp-invocation:get-lisp-implementation)))
 		(executable-pathname (if (roswellp)
 										(lisp-invocation:lisp-implementation-name
