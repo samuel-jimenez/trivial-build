@@ -1,7 +1,7 @@
 # trivial-build
 
 [![CircleCI](https://circleci.com/gh/samuel-jimenez/trivial-build/tree/master.svg?style=svg)](https://circleci.com/gh/samuel-jimenez/trivial-build/tree/master)
-[![Coverage Status](https://coveralls.io/repos/github/samuel-jimenez/trivial-build/badge.svg?branch=master)](https://coveralls.io/github/samuel-jimenez/trivial-build?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/samuel-jimenez/trivial-build/badge.svg?branch=master&kill_cache=1)](https://coveralls.io/github/samuel-jimenez/trivial-build?branch=master)
 
 Compile a system into an executable.
 
