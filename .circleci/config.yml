@@ -34,7 +34,7 @@ jobs:
 
       - run:
           name: Clone trivial-exe
-          command: git clone https://github.com/ceramic/trivial-exe ~/lisp/trivial-exe
+          command: git clone https://github.com/samuel-jimenez/trivial-exe ~/lisp/trivial-exe
 
       - run:
           name: init roswell test file
@@ -54,7 +54,7 @@ jobs:
                       (uiop:print-condition-backtrace c)
                       (uiop:quit -1)))
               (coveralls:with-coveralls (:exclude (list "t"))
-                (or (trivial-build-test:run-tests)
+                (or (asdf:test-system :trivial-build)
                   (uiop:quit -1))))
             EOF
 
@@ -97,6 +97,9 @@ jobs:
             scoop install roswell
 
       - run:
+          name: Clone trivial-exe
+          command: git clone https://github.com/samuel-jimenez/trivial-exe C:/Users/circleci/project/lisp/trivial-exe
+      - run:
           name: init roswell test file
           command: |
             ros init test
@@ -114,7 +117,7 @@ jobs:
                         (declare (ignore h))
                         (uiop:print-condition-backtrace c)
                         (uiop:quit -1)))
-              (trivial-build-test:run-tests))
+              (asdf:test-system :trivial-build))
             "@
             Add-Content "test.ros" $String1
       - run:
