@@ -8,8 +8,8 @@
 	:fullname "Roswell"
 	:name "ros"
 	:flags ()
-	:eval-flag "--e"
-	:load-flag "--l")
+	:eval-flag "-e"
+	:load-flag "-l")
 
 (defun roswellp ()
 	"Are we in a Roswell implementation?"
